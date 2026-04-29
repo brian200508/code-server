@@ -4,7 +4,7 @@ import * as http from "http"
 import * as net from "net"
 import qs from "qs"
 import { Disposable } from "../common/emitter"
-import { CookieKeys, HttpCode, HttpError } from "../common/http"
+import { HttpCode, HttpError } from "../common/http"
 import { normalize } from "../common/util"
 import { AuthType, DefaultedArgs } from "./cli"
 import { version as codeServerVersion } from "./constants"
@@ -40,6 +40,7 @@ declare global {
       heart: Heart
       settings: SettingsProvider<CoderSettings>
       updater: UpdateProvider
+      cookieSessionName: string
     }
   }
 }
@@ -124,7 +125,7 @@ export const authenticated = async (req: express.Request): Promise<boolean> => {
       const passwordMethod = getPasswordMethod(hashedPasswordFromArgs)
       const isCookieValidArgs: IsCookieValidArgs = {
         passwordMethod,
-        cookieKey: sanitizeString(req.cookies[CookieKeys.Session]),
+        cookieKey: sanitizeString(req.cookies[req.cookieSessionName]),
         passwordFromArgs: req.args.password || "",
         hashedPasswordFromArgs: req.args["hashed-password"],
       }
@@ -351,6 +352,25 @@ export function ensureOrigin(req: express.Request, _?: express.Response, next?: 
 }
 
 /**
+ * Return true if the origin matches any trusted origin.  Entries are matched
+ * as exact strings, the special wildcard `"*"`, or `*.example.com`-style
+ * domain wildcards (same as --proxy-domain).
+ */
+export function isTrustedOrigin(origin: string, trustedOrigins: string[]): boolean {
+  return trustedOrigins.some((trusted) => {
+    if (trusted === "*" || trusted === origin) {
+      return true
+    }
+    // *.example.com style: match origin if it is the domain or a subdomain
+    if (trusted.startsWith("*.")) {
+      const domain = trusted.slice(2).toLowerCase()
+      return origin === domain || origin.endsWith("." + domain)
+    }
+    return false
+  })
+}
+
+/**
  * Authenticate the request origin against the host.  Throw if invalid.
  */
 export function authenticateOrigin(req: express.Request): void {
@@ -369,7 +389,7 @@ export function authenticateOrigin(req: express.Request): void {
   }
 
   const trustedOrigins = req.args["trusted-origins"] || []
-  if (trustedOrigins.includes(origin) || trustedOrigins.includes("*")) {
+  if (isTrustedOrigin(origin, trustedOrigins)) {
     return
   }
 
