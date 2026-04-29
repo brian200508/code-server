@@ -3,7 +3,7 @@ name: Script unit tests
 on:
   push:
     branches:
-      - main
+      - main-brian200508
     paths:
       - "**.sh"
       - "**.bats"
