@@ -2,7 +2,7 @@ name: Security
 
 on:
   push:
-    branches: [main]
+    branches: [main-brian200508]
     paths:
       - "package.json"
   pull_request:
