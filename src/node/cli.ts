@@ -52,7 +52,9 @@ export interface UserProvidedCodeArgs {
   "disable-workspace-trust"?: boolean
   "disable-getting-started-override"?: boolean
   "disable-proxy"?: boolean
+  "reconnection-grace-time"?: string
   "session-socket"?: string
+  "cookie-suffix"?: string
   "link-protection-trusted-domains"?: string[]
   // locale is used by both VS Code and code-server.
   locale?: string
@@ -171,6 +173,12 @@ export const options: Options<Required<UserProvidedArgs>> = {
   },
   "session-socket": {
     type: "string",
+  },
+  "cookie-suffix": {
+    type: "string",
+    description:
+      "Adds a suffix to the cookie. This can prevent a collision of cookies for subdomains, making them explixit. \n" +
+      "Without this flag, no suffix is used. This can also be set with CODE_SERVER_COOKIE_SUFFIX set to any string.",
   },
   "disable-file-downloads": {
     type: "boolean",
@@ -307,6 +315,12 @@ export const options: Options<Required<UserProvidedArgs>> = {
   "idle-timeout-seconds": {
     type: "number",
     description: "Timeout in seconds to wait before shutting down when idle.",
+  },
+  "reconnection-grace-time": {
+    type: "string",
+    description:
+      "Override the reconnection grace time in seconds. Clients who disconnect for longer than this duration will need to \n" +
+      "reload the window. Defaults to 10800 (3 hours).",
   },
 }
 
@@ -512,6 +526,7 @@ export interface DefaultedArgs extends ConfigArgs {
   "extensions-dir": string
   "user-data-dir": string
   "session-socket": string
+  "app-name": string
   /* Positional arguments. */
   _: string[]
 }
@@ -616,8 +631,16 @@ export async function setDefaults(cliArgs: UserProvidedArgs, configArgs?: Config
     usingEnvPassword = false
   }
 
+  if (process.env.CODE_SERVER_COOKIE_SUFFIX) {
+    args["cookie-suffix"] = process.env.CODE_SERVER_COOKIE_SUFFIX
+  }
+
   if (process.env.GITHUB_TOKEN) {
     args["github-auth"] = process.env.GITHUB_TOKEN
+  }
+
+  if (process.env.CODE_SERVER_RECONNECTION_GRACE_TIME) {
+    args["reconnection-grace-time"] = process.env.CODE_SERVER_RECONNECTION_GRACE_TIME
   }
 
   if (process.env.CODE_SERVER_IDLE_TIMEOUT_SECONDS) {
@@ -653,6 +676,10 @@ export async function setDefaults(cliArgs: UserProvidedArgs, configArgs?: Config
     process.env.VSCODE_PROXY_URI = `//${finalProxies[0]}`
   }
   args["proxy-domain"] = finalProxies
+
+  if (!args["app-name"]) {
+    args["app-name"] = "code-server"
+  }
 
   args._ = getResolvedPathsFromArgs(args)
 
