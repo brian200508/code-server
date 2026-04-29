@@ -6,14 +6,14 @@ on:
   # but seems okay for testing.
   pull_request:
     branches:
-      - main
+      - main-brian200508
     paths:
       - .github/workflows/trivy-docker.yaml
 
   # Run scans against master whenever changes are merged.
   push:
     branches:
-      - main
+      - main-brian200508
     paths:
       - .github/workflows/trivy-docker.yaml
 
