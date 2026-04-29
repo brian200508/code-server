@@ -105,7 +105,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - run: helm plugin install https://github.com/instrumenta/helm-kubeval
-      - run: helm kubeval ci/helm-chart
+      - run: helm kubeval ci/helm-chart --schema-location https://raw.githubusercontent.com/instrumenta/kubeval/master/schemas/
 
   lint-ts:
     name: Lint TypeScript files
