@@ -3,13 +3,13 @@ name: Installer integration
 on:
   push:
     branches:
-      - main
+      - main-brian200508
     paths:
       - "install.sh"
       - ".github/workflows/installer.yaml"
   pull_request:
     branches:
-      - main
+      - main-brian200508
     paths:
       - "install.sh"
       - ".github/workflows/installer.yaml"
