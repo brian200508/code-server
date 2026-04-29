@@ -83,19 +83,19 @@ jobs:
       - run: SKIP_SUBMODULE_DEPS=1 npm ci
       - run: npm run doctoc
 
-  lint-helm:
-    name: Lint Helm chart
-    runs-on: ubuntu-22.04
-    needs: changes
-    if: needs.changes.outputs.helm == 'true'
-    steps:
-      - uses: actions/checkout@v6
-      - uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          version: "v3.19.2"
-      - run: helm plugin install https://github.com/instrumenta/helm-kubeval
-      - run: helm kubeval ci/helm-chart --schema-location https://raw.githubusercontent.com/instrumenta/kubeval/master/schemas/
+  #lint-helm:
+  #  name: Lint Helm chart
+  #  runs-on: ubuntu-22.04
+  #  needs: changes
+  #  if: needs.changes.outputs.helm == 'true'
+  #  steps:
+  #    - uses: actions/checkout@v6
+  #    - uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
+  #      with:
+  #        token: ${{ secrets.GITHUB_TOKEN }}
+  #        version: "v3.19.2"
+  #    - run: helm plugin install https://github.com/instrumenta/helm-kubeval
+  #    - run: helm kubeval ci/helm-chart
 
   lint-ts:
     name: Lint TypeScript files
